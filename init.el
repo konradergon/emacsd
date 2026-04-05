@@ -9,6 +9,7 @@
 
 (savehist-mode 1)
 (recentf-mode 1)
+(delete-selection-mode 1)
 
 (windmove-default-keybindings 'control)
 
@@ -192,6 +193,11 @@ Creates parent directories as needed."
             (todo)))
           ("w" "Work" agenda ""
            ((org-agenda-files '("work.org")))))))
+
+(use-package eat
+  :ensure t
+  :defer
+  :hook ('eshell-load-hook #'eat-eshell-mode))
 
 ;;;; Claude Code
 
