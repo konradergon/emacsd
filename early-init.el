@@ -1,5 +1,8 @@
 (setq k--initial-gc-threshold gc-cons-threshold)
 (setq gc-cons-threshold 10000000)
+
+(setq load-prefer-newer t)
+
 (setq byte-compile-warnings '(not obsolete))
 (setq warning-suppress-log-types '((comp) (bytecomp)))
 (setq native-comp-async-report-warnings-errors 'silent)

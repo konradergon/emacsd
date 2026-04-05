@@ -27,8 +27,8 @@
    `(cursor ((t (:background ,yotsuba-subject))))
    `(region ((t (:background ,yotsuba-border))))
    `(fringe ((t (:background ,yotsuba-bg))))
-   `(mode-line ((t (:background ,yotsuba-post :foreground ,yotsuba-subject :box (:line-width 1 :color ,yotsuba-border)))))
-   `(mode-line-inactive ((t (:background ,yotsuba-bg :foreground ,yotsuba-grey :box (:line-width 1 :color ,yotsuba-post)))))
+   `(mode-line ((t (:background ,yotsuba-post :foreground ,yotsuba-subject :box (:line-width -1 :color ,yotsuba-border)))))
+   `(mode-line-inactive ((t (:background ,yotsuba-bg :foreground ,yotsuba-grey :box (:line-width -1 :color ,yotsuba-post)))))
    `(minibuffer-prompt ((t (:foreground ,yotsuba-subject :weight bold))))
    
    ;; Font-Lock (Syntax Highlighting)

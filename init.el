@@ -2,6 +2,9 @@
 
 (setopt inhibit-splash-screen t)
 (setopt display-time-default-load-average nil)
+(setopt sentence-end-double-space nil)
+(setopt use-short-answers t)
+(setopt switch-to-buffer-obey-display-actions t)
 
 (setopt auto-revert-avoid-polling t)
 (setopt auto-revert-interval 5)
@@ -10,11 +13,9 @@
 (savehist-mode 1)
 (recentf-mode 1)
 (delete-selection-mode 1)
+(blink-cursor-mode -1)
 
 (windmove-default-keybindings 'control)
-
-(setopt sentence-end-double-space nil)
-(setopt use-short-answers t)
 
 (when (display-graphic-p)
   (context-menu-mode))
@@ -30,16 +31,8 @@ Creates parent directories as needed."
     backup-path))
 (setopt make-backup-file-name-function 'k--backup-file-name)
 
-;;;; Interface
+;;;; macOS modifiers
 
-(setopt line-number-mode t)
-(setopt column-number-mode t)
-(setopt switch-to-buffer-obey-display-actions t)
-(setopt show-trailing-whitespace nil)
-
-(blink-cursor-mode -1)
-
-;; macOS modifiers
 (setopt mac-command-modifier 'meta)
 (setopt mac-right-command-modifier 'super)
 (setopt mac-option-modifier nil)
@@ -53,7 +46,7 @@ Creates parent directories as needed."
 (when (display-graphic-p)
   (load-theme 'yotsuba t))
 
-;;;; Minibuffer completion (built-in)
+;;;; Minibuffer completion
 
 (fido-vertical-mode 1)
 (keymap-set icomplete-minibuffer-map "TAB" 'icomplete-force-complete)
@@ -64,7 +57,7 @@ Creates parent directories as needed."
 (setopt read-buffer-completion-ignore-case t)
 (setopt read-file-name-completion-ignore-case t)
 
-;;;; In-buffer completion (built-in)
+;;;; In-buffer completion
 
 (setopt hippie-expand-try-functions-list
         '(try-expand-dabbrev
@@ -83,7 +76,7 @@ Creates parent directories as needed."
 (add-hook 'text-mode-hook 'visual-line-mode)
 (add-hook 'prog-mode-hook 'electric-pair-local-mode)
 
-;; Tree-sitter grammar sources
+;; Tree-sitter
 (setq treesit-language-source-alist
       '((yaml       "https://github.com/ikatyang/tree-sitter-yaml")
         (bash       "https://github.com/tree-sitter/tree-sitter-bash")
@@ -123,13 +116,12 @@ Creates parent directories as needed."
 ;;;; Project & version control
 
 (use-package project
-  :custom
-  (when (>= emacs-major-version 30)
-    (project-mode-line t)))
+  :config
+  (setq project-mode-line t))
 
 (use-package magit
   :ensure t
-  :bind (("C-x g" . magit-status)))
+  :bind ("C-x g" . magit-status))
 
 ;;;; Org
 
@@ -151,17 +143,11 @@ Creates parent directories as needed."
                        ("review")
                        ("reading")))
 
-(setq org-refile-targets 'FIXME)
-
-(setq org-roam-directory "~/org-roam/")
-(setq org-roam-index-file "~/org-roam/index.org")
-
 (setq org-link-abbrev-alist
       '(("family_search" . "https://www.familysearch.org/tree/person/details/%s")))
 
 (use-package org
-  :hook ((org-mode . visual-line-mode)
-         (org-mode . flyspell-mode))
+  :hook ((org-mode . flyspell-mode))
   :bind (:map global-map
               ("C-c l s" . org-store-link)
               ("C-c l i" . org-insert-link-global))
@@ -195,10 +181,12 @@ Creates parent directories as needed."
           ("w" "Work" agenda ""
            ((org-agenda-files '("work.org")))))))
 
+;;;; Terminal
+
 (use-package eat
   :ensure t
-  :defer
-  :hook ('eshell-load-hook #'eat-eshell-mode))
+  :config
+  (add-hook 'eshell-load-hook #'eat-eshell-mode))
 
 ;;;; Claude Code
 
@@ -217,7 +205,7 @@ Creates parent directories as needed."
  '(package-selected-packages nil)
  '(package-vc-selected-packages
    '((claude-code-ide :url
-		      "https://github.com/manzaltu/claude-code-ide.el"))))
+                      "https://github.com/manzaltu/claude-code-ide.el"))))
 (custom-set-faces)
 
 (setq gc-cons-threshold (or k--initial-gc-threshold 800000))
