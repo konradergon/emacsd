@@ -50,7 +50,8 @@ Creates parent directories as needed."
 
 ;;;; Theme
 
-(load-theme 'yotsuba t)
+(when (display-graphic-p)
+  (load-theme 'yotsuba t))
 
 ;;;; Minibuffer completion (built-in)
 
@@ -207,7 +208,8 @@ Creates parent directories as needed."
   :config
   (claude-code-ide-emacs-tools-setup)
   :custom
-  (claude-code-ide-terminal-backend 'term))
+  (claude-code-ide-terminal-backend 'eat)
+  (claude-code-ide-use-side-window nil))
 
 ;;;; Custom
 
