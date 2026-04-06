@@ -10,7 +10,5 @@
 (setq native-comp-async-jobs-number 2)
 (setq read-process-output-max 1000000)
 
-(setq inhibit-startup-echo-area-message (user-login-name))
-
 (tool-bar-mode -1)
 (menu-bar-mode -1)
