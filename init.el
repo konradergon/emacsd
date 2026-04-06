@@ -108,6 +108,7 @@ Creates parent directories as needed."
 (use-package c-ts-mode
   :defer
   :custom
+  (c-ts-mode-indent-offset 8)
   (c-ts-mode-indent-style 'linux))
 
 ;;;; Project & version control
