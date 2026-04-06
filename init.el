@@ -106,17 +106,20 @@ Creates parent directories as needed."
   :mode "\\.go\\'")
 
 (use-package c-ts-mode
+  :defer
   :custom
   (c-ts-mode-indent-style 'linux))
 
 ;;;; Project & version control
 
 (use-package project
+  :defer
   :custom
   (project-mode-line t))
 
 (use-package magit
   :ensure t
+  :defer
   :bind ("C-x g" . magit-status))
 
 ;;;; Org
@@ -173,8 +176,11 @@ Creates parent directories as needed."
 
 (use-package eat
   :ensure t
+  :defer
   :config
-  (add-hook 'eshell-load-hook #'eat-eshell-mode))
+  (add-hook 'eshell-load-hook #'eat-eshell-mode)
+  :custom
+  (eat-term-name "xterm-256color"))
 
 ;;;; Claude Code
 
