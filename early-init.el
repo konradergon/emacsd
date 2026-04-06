@@ -11,4 +11,3 @@
 (setq read-process-output-max 1000000)
 
 (tool-bar-mode -1)
-(menu-bar-mode -1)

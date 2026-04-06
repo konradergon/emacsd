@@ -6,13 +6,13 @@
 (setopt use-short-answers t)
 (setopt switch-to-buffer-obey-display-actions t)
 
-(setopt auto-revert-avoid-polling t)
+(setopt auto-revert-use-notify nil)
 (setopt auto-revert-interval 5)
 (global-auto-revert-mode)
 
-(savehist-mode 1)
-(recentf-mode 1)
-(delete-selection-mode 1)
+(savehist-mode)
+(recentf-mode)
+(delete-selection-mode)
 (blink-cursor-mode -1)
 
 (windmove-default-keybindings 'control)
@@ -48,7 +48,7 @@ Creates parent directories as needed."
 
 ;;;; Minibuffer completion
 
-(fido-vertical-mode 1)
+(fido-vertical-mode)
 (keymap-set icomplete-minibuffer-map "TAB" 'icomplete-force-complete)
 
 (setopt completions-detailed t)
@@ -69,7 +69,7 @@ Creates parent directories as needed."
           try-complete-lisp-symbol-partially
           try-complete-lisp-symbol))
 
-(keymap-global-set "M--" 'hippie-expand)
+(keymap-global-set "M-/" 'hippie-expand)
 
 ;;;; Editing
 
@@ -90,13 +90,9 @@ Creates parent directories as needed."
           (c          "https://github.com/tree-sitter/tree-sitter-c")
           (cpp        "https://github.com/tree-sitter/tree-sitter-cpp")))
 
-(dolist (lang (mapcar #'car treesit-language-source-alist))
-  (unless (treesit-language-available-p lang)
-    (treesit-install-language-grammar lang)))
-
 (setopt major-mode-remap-alist
         '((yaml-mode       . yaml-ts-mode)
-          (bash-mode       . bash-ts-mode)
+          (sh-mode         . bash-ts-mode)
           (js2-mode        . js-ts-mode)
           (typescript-mode . typescript-ts-mode)
           (json-mode       . json-ts-mode)
@@ -111,7 +107,7 @@ Creates parent directories as needed."
 
 (use-package c-ts-mode
   :custom
-  (c-ts-mode-indent-offset 4))
+  (c-ts-mode-indent-style 'linux))
 
 ;;;; Project & version control
 
