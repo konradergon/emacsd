@@ -8,4 +8,5 @@
 (setq native-comp-async-jobs-number 2)
 (setq read-process-output-max 1000000)
 
+(menu-bar-mode -1)
 (tool-bar-mode -1)
