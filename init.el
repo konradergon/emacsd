@@ -28,8 +28,7 @@
 
 (defun backup-file-name (fpath)
   (let* ((root (concat user-emacs-directory "backups/"))
-         (clean (replace-regexp-in-string "[A-Za-z]:" "" fpath))
-         (dest (replace-regexp-in-string "//" "/" (concat root clean "~"))))
+         (dest (concat root fpath "~")))
     (make-directory (file-name-directory dest) t)
     dest))
 
@@ -80,7 +79,8 @@
 ;;;; Org
 
 (setq org-directory "~/org/"
-      org-agenda-files '("inbox.org" "work.org")
+      org-agenda-files (list (expand-file-name "inbox.org" org-directory)
+                             (expand-file-name "work.org" org-directory))
       org-export-with-smart-quotes t
       org-outline-path-complete-in-steps nil
       org-refile-use-outline-path 'file)
@@ -128,7 +128,6 @@
 
 ;;;; Magit
 
-(autoload 'magit-status "magit" nil t)
 (keymap-global-set "C-x g" 'magit-status)
 
 ;;;; Eat
