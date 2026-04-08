@@ -59,7 +59,14 @@
 
 ;;;; Completion
 
+(defun icomplete-backspace ()
+  (interactive)
+  (if (memq (icomplete--category) '(file dir))
+      (icomplete-fido-backward-updir)
+    (backward-kill-word)))
+
 (fido-vertical-mode)
+(keymap-set icomplete-minibuffer-map "DEL" 'icomplete-backspace)
 (keymap-set icomplete-minibuffer-map "TAB" 'icomplete-force-complete)
 
 (setq hippie-expand-try-functions-list
