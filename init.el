@@ -63,7 +63,7 @@
   (interactive)
   (if (memq (icomplete--category) '(file dir))
       (icomplete-fido-backward-updir)
-    (backward-kill-word)))
+    (backward-kill-word 1)))
 
 (fido-vertical-mode)
 (keymap-set icomplete-minibuffer-map "DEL" 'icomplete-backspace)
