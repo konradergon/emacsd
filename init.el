@@ -37,9 +37,6 @@
 (setq auto-revert-use-notify nil
       auto-revert-interval 5)
 
-(setq c-default-style "linux"
-      c-basic-offset 8)
-
 (setq project-mode-line t)
 
 (blink-cursor-mode -1)
