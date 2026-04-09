@@ -40,12 +40,42 @@
 (recentf-mode)
 
 (context-menu-mode)
-(load-theme 'yotsuba t)
 
 (windmove-default-keybindings 'control)
 
 (keymap-global-set "M-h" 'ns-do-hide-emacs)
 (keymap-global-set "M-'" 'other-frame)
+
+;;;; Completions
+
+(setq enable-recursive-minibuffers t
+      completion-cycle-threshold 1
+      completions-detailed t
+      tab-always-indent 'complete
+      completion-styles '(basic initials substring)
+      completion-auto-help 'always
+      completions-max-height 20
+      completions-format 'one-column
+      completions-group t
+      completion-auto-select t)
+
+(defun my-completions-pre-command ()
+  "Redirect to the minibuffer any command that is not
+`previous-completion', `next-completion', or `choose-completion'.
+Switches window and re-looks up the key so the command executes
+in the minibuffer context rather than the completions context."
+  (unless (memq this-command
+                '(previous-completion next-completion choose-completion))
+    (when-let ((win (active-minibuffer-window)))
+      (let ((keys (this-command-keys-vector)))
+        (select-window win)
+        (when-let ((cmd (key-binding keys)))
+          (setq this-command cmd))))))
+
+(add-hook 'completion-list-mode-hook
+          (lambda ()
+            (add-hook 'pre-command-hook
+                      #'my-completions-pre-command nil t)))
 
 ;;;; Org
 
@@ -127,10 +157,34 @@
    '((claude-code-ide :url
 		      "https://github.com/manzaltu/claude-code-ide.el"))))
 (custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+ ;; Basic Interface
+ '(default                  ((t (:background "#ffffee" :foreground "#000000"))))
+ '(cursor                   ((t (:background "#800000"))))
+ '(region                   ((t (:background "#d6bad0"))))
+ '(fringe                   ((t (:background "#ffffee"))))
+ '(mode-line                ((t (:background "#f0e0d6" :foreground "#800000" :box (:line-width -1 :color "#d6bad0")))))
+ '(mode-line-inactive       ((t (:background "#ffffee" :foreground "#444444" :box (:line-width -1 :color "#f0e0d6")))))
+ '(minibuffer-prompt        ((t (:foreground "#800000" :weight bold))))
+ ;; Font-Lock
+ '(font-lock-comment-face   ((t (:foreground "#789922"))))
+ '(font-lock-doc-face       ((t (:foreground "#789922" :slant italic))))
+ '(font-lock-string-face    ((t (:foreground "#117743"))))
+ '(font-lock-keyword-face   ((t (:foreground "#800000" :weight bold))))
+ '(font-lock-function-name-face ((t (:foreground "#0000ee"))))
+ '(font-lock-variable-name-face ((t (:foreground "#000000"))))
+ '(font-lock-type-face      ((t (:foreground "#af0a0f"))))
+ '(font-lock-constant-face  ((t (:foreground "#0000ee" :slant italic))))
+ '(font-lock-warning-face   ((t (:foreground "#af0a0f" :weight bold))))
+ '(font-lock-builtin-face   ((t (:foreground "#800000"))))
+ ;; Org
+ '(org-level-1              ((t (:foreground "#800000" :weight bold :height 1.2))))
+ '(org-level-2              ((t (:foreground "#117743" :weight bold :height 1.1))))
+ '(org-link                 ((t (:foreground "#0000ee" :underline t))))
+ '(org-block                ((t (:background "#f0e0d6"))))
+ '(org-quote                ((t (:foreground "#789922"))))
+ '(org-document-title       ((t (:foreground "#800000" :weight bold :height 1.5))))
+ ;; Line numbers
+ '(line-number              ((t (:foreground "#d6bad0" :background "#ffffee"))))
+ '(line-number-current-line ((t (:foreground "#800000" :background "#f0e0d6")))))
 
 (setq gc-cons-threshold 800000)
