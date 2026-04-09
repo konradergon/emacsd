@@ -14,8 +14,7 @@
       display-time-default-load-average nil
       sentence-end-double-space nil
       use-short-answers t
-      switch-to-buffer-obey-display-actions t
-      completion-styles '(basic initials substring))
+      switch-to-buffer-obey-display-actions t)
 
 (setq mac-command-modifier 'meta
       mac-right-command-modifier 'super
@@ -35,44 +34,18 @@
 
 (setq project-mode-line t)
 
-(blink-cursor-mode -1)
 (delete-selection-mode)
 (global-auto-revert-mode)
 (savehist-mode)
 (recentf-mode)
 
-(when (display-graphic-p)
-  (context-menu-mode)
-  (load-theme 'yotsuba t))
+(context-menu-mode)
+(load-theme 'yotsuba t)
 
 (windmove-default-keybindings 'control)
 
 (keymap-global-set "M-h" 'ns-do-hide-emacs)
 (keymap-global-set "M-'" 'other-frame)
-
-(add-hook 'text-mode-hook 'visual-line-mode)
-(add-hook 'prog-mode-hook 'electric-pair-local-mode)
-
-;;;; Completion
-
-(setq icomplete-show-matches-on-no-input t)
-(setq icomplete-scroll t)
-
-(icomplete-vertical-mode)
-(keymap-set icomplete-minibuffer-map "DEL" 'icomplete-fido-backward-updir)
-(keymap-set icomplete-minibuffer-map "RET" 'icomplete-force-complete-and-exit)
-(keymap-set icomplete-minibuffer-map "TAB" 'icomplete-force-complete)
-
-(setq hippie-expand-try-functions-list
-      '(try-expand-dabbrev
-        try-expand-dabbrev-all-buffers
-        try-complete-file-name-partially
-        try-complete-file-name
-        try-expand-all-abbrevs
-        try-expand-line
-        try-complete-lisp-symbol-partially
-        try-complete-lisp-symbol))
-(keymap-global-set "M-/" 'hippie-expand)
 
 ;;;; Org
 
