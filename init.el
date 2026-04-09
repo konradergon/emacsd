@@ -15,11 +15,7 @@
       sentence-end-double-space nil
       use-short-answers t
       switch-to-buffer-obey-display-actions t
-      completions-detailed t
-      completion-styles '(flex substring partial-completion)
-      completion-ignore-case t
-      read-buffer-completion-ignore-case t
-      read-file-name-completion-ignore-case t)
+      completion-styles '(basic initials substring))
 
 (setq mac-command-modifier 'meta
       mac-right-command-modifier 'super
@@ -59,14 +55,12 @@
 
 ;;;; Completion
 
-(defun icomplete-backspace ()
-  (interactive)
-  (if (memq (icomplete--category) '(file dir))
-      (icomplete-fido-backward-updir)
-    (backward-kill-word 1)))
+(setq icomplete-show-matches-on-no-input t)
+(setq icomplete-scroll t)
 
-(fido-vertical-mode)
-(keymap-set icomplete-minibuffer-map "DEL" 'icomplete-backspace)
+(icomplete-vertical-mode)
+(keymap-set icomplete-minibuffer-map "DEL" 'icomplete-fido-backward-updir)
+(keymap-set icomplete-minibuffer-map "RET" 'icomplete-force-complete-and-exit)
 (keymap-set icomplete-minibuffer-map "TAB" 'icomplete-force-complete)
 
 (setq hippie-expand-try-functions-list
