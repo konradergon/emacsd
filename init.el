@@ -46,11 +46,6 @@
 (keymap-global-set "M-h" 'ns-do-hide-emacs)
 (keymap-global-set "M-'" 'other-frame)
 
-;;;; Completion
-
-(setq tab-always-indent 'complete
-      completion-styles '(basic initials substring))
-
 ;;;; Org
 
 (setq org-directory "~/org/"
