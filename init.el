@@ -46,36 +46,10 @@
 (keymap-global-set "M-h" 'ns-do-hide-emacs)
 (keymap-global-set "M-'" 'other-frame)
 
-;;;; Completions
+;;;; Completion
 
-(setq enable-recursive-minibuffers t
-      completion-cycle-threshold 1
-      completions-detailed t
-      tab-always-indent 'complete
-      completion-styles '(basic initials substring)
-      completion-auto-help 'always
-      completions-max-height 20
-      completions-format 'one-column
-      completions-group t
-      completion-auto-select t)
-
-(defun my-completions-pre-command ()
-  "Redirect to the minibuffer any command that is not
-`previous-completion', `next-completion', or `choose-completion'.
-Switches window and re-looks up the key so the command executes
-in the minibuffer context rather than the completions context."
-  (unless (memq this-command
-                '(previous-completion next-completion choose-completion))
-    (when-let ((win (active-minibuffer-window)))
-      (let ((keys (this-command-keys-vector)))
-        (select-window win)
-        (when-let ((cmd (key-binding keys)))
-          (setq this-command cmd))))))
-
-(add-hook 'completion-list-mode-hook
-          (lambda ()
-            (add-hook 'pre-command-hook
-                      #'my-completions-pre-command nil t)))
+(setq tab-always-indent 'complete
+      completion-styles '(basic initials substring))
 
 ;;;; Org
 
