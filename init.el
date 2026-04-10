@@ -1,5 +1,6 @@
 (require 'package)
 (package-initialize)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
 (unless package-archive-contents
   (package-refresh-contents))
