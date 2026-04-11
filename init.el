@@ -6,7 +6,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(go-mode magit vterm exec-path-from-shell))
+(dolist (pkg '(go-mode magit eat exec-path-from-shell))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -102,6 +102,8 @@
 
 (keymap-global-set "C-x g" 'magit-status)
 (keymap-global-set "C-c C-0" 'claude-code-ide)
+(setq claude-code-ide-terminal-backend 'eat)
+(setq claude-code-ide-no-flicker t)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
