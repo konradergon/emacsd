@@ -9,9 +9,11 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(go-mode magit vterm))
+(dolist (pkg '(go-mode magit vterm exec-path-from-shell))
   (unless (package-installed-p pkg)
     (package-install pkg)))
+
+(exec-path-from-shell-initialize)
 
 (unless (package-installed-p 'claude-code-ide)
   (package-vc-install
@@ -39,8 +41,7 @@
 (setq project-mode-line t)
 
 (delete-selection-mode)
-(setq auto-revert-use-notify nil)
-(global-auto-revert-mode)
+(auto-revert-mode -1)
 (savehist-mode)
 (recentf-mode)
 
@@ -106,31 +107,31 @@
 (keymap-global-set "C-x g" 'magit-status)
 (keymap-global-set "C-c C-0" 'claude-code-ide)
 
-;;; Theme
+;;; Colors
 
 (custom-set-faces
- '(default ((t (:background "#ffffee" :foreground "#000000"))))
- '(cursor ((t (:background "#800000"))))
- '(font-lock-builtin-face ((t (:foreground "#800000"))))
- '(font-lock-comment-face ((t (:foreground "#789922"))))
- '(font-lock-constant-face ((t (:foreground "#0000ee" :slant italic))))
- '(font-lock-doc-face ((t (:foreground "#789922" :slant italic))))
+ '(default                      ((t (:background "#ffffee" :foreground "#000000"))))
+ '(cursor                       ((t (:background "#800000"))))
+ '(fringe                       ((t (:background "#ffffee"))))
+ '(region                       ((t (:background "#d6bad0"))))
+ '(minibuffer-prompt            ((t (:foreground "#800000" :weight bold))))
+ '(line-number                  ((t (:foreground "#d6bad0" :background "#ffffee"))))
+ '(line-number-current-line     ((t (:foreground "#800000" :background "#f0e0d6"))))
+ '(mode-line                    ((t (:background "#f0e0d6" :foreground "#800000" :box (:line-width -1 :color "#d6bad0")))))
+ '(mode-line-inactive           ((t (:background "#ffffee" :foreground "#444444" :box (:line-width -1 :color "#f0e0d6")))))
+ '(font-lock-builtin-face       ((t (:foreground "#800000"))))
+ '(font-lock-comment-face       ((t (:foreground "#789922"))))
+ '(font-lock-constant-face      ((t (:foreground "#0000ee" :slant italic))))
+ '(font-lock-doc-face           ((t (:foreground "#789922" :slant italic))))
  '(font-lock-function-name-face ((t (:foreground "#0000ee"))))
- '(font-lock-keyword-face ((t (:foreground "#800000" :weight bold))))
- '(font-lock-string-face ((t (:foreground "#117743"))))
- '(font-lock-type-face ((t (:foreground "#af0a0f"))))
+ '(font-lock-keyword-face       ((t (:foreground "#800000" :weight bold))))
+ '(font-lock-string-face        ((t (:foreground "#117743"))))
+ '(font-lock-type-face          ((t (:foreground "#af0a0f"))))
  '(font-lock-variable-name-face ((t (:foreground "#000000"))))
- '(font-lock-warning-face ((t (:foreground "#af0a0f" :weight bold))))
- '(fringe ((t (:background "#ffffee"))))
- '(line-number ((t (:foreground "#d6bad0" :background "#ffffee"))))
- '(line-number-current-line ((t (:foreground "#800000" :background "#f0e0d6"))))
- '(minibuffer-prompt ((t (:foreground "#800000" :weight bold))))
- '(mode-line ((t (:background "#f0e0d6" :foreground "#800000" :box (:line-width -1 :color "#d6bad0")))))
- '(mode-line-inactive ((t (:background "#ffffee" :foreground "#444444" :box (:line-width -1 :color "#f0e0d6")))))
- '(org-block ((t (:background "#f0e0d6"))))
- '(org-document-title ((t (:foreground "#800000" :weight bold :height 1.5))))
- '(org-level-1 ((t (:foreground "#800000" :weight bold :height 1.2))))
- '(org-level-2 ((t (:foreground "#117743" :weight bold :height 1.1))))
- '(org-link ((t (:foreground "#0000ee" :underline t))))
- '(org-quote ((t (:foreground "#789922"))))
- '(region ((t (:background "#d6bad0")))))
+ '(font-lock-warning-face       ((t (:foreground "#af0a0f" :weight bold))))
+ '(org-block                    ((t (:background "#f0e0d6"))))
+ '(org-document-title           ((t (:foreground "#800000" :weight bold :height 1.5))))
+ '(org-level-1                  ((t (:foreground "#800000" :weight bold :height 1.2))))
+ '(org-level-2                  ((t (:foreground "#117743" :weight bold :height 1.1))))
+ '(org-link                     ((t (:foreground "#0000ee" :underline t))))
+ '(org-quote                    ((t (:foreground "#789922")))))
