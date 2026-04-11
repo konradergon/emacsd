@@ -1,4 +1,4 @@
-(setq gc-cons-threshold 10000000)
+(setq gc-cons-threshold (* 16 1024 1024))
 
 (setq load-prefer-newer t)
 

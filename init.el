@@ -2,14 +2,20 @@
 (load custom-file :no-error-if-file-is-missing)
 
 (require 'package)
+(setq package-native-compile t)
 (package-initialize)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
 (unless package-archive-contents
   (package-refresh-contents))
-(defmacro package-ensure (pkg)
-  `(unless (package-installed-p ',pkg)
-     (package-install ',pkg)))
+
+(dolist (pkg '(go-mode magit vterm))
+  (unless (package-installed-p pkg)
+    (package-install pkg)))
+
+(unless (package-installed-p 'claude-code-ide)
+  (package-vc-install
+   '(claude-code-ide :url "https://github.com/manzaltu/claude-code-ide.el")))
 
 (setq inhibit-splash-screen t
       display-time-default-load-average nil
@@ -33,6 +39,7 @@
 (setq project-mode-line t)
 
 (delete-selection-mode)
+(setq auto-revert-use-notify nil)
 (global-auto-revert-mode)
 (savehist-mode)
 (recentf-mode)
@@ -43,8 +50,6 @@
 
 (keymap-global-set "M-h" 'ns-do-hide-emacs)
 (keymap-global-set "M-'" 'other-frame)
-
-(package-ensure go-mode)
 
 ;;; Org
 
@@ -96,81 +101,10 @@
 (keymap-global-set "C-c l s" 'org-store-link)
 (keymap-global-set "C-c l i" 'org-insert-link-global)
 
-;;; Git
+;;; Dev
 
-(package-ensure magit)
 (keymap-global-set "C-x g" 'magit-status)
-
-;;; Claude
-
-(defvar ai-scratch-path nil)
-
-(defun claude-chat ()
-  (interactive)
-  (let* ((source-file (buffer-file-name))
-         (project-root (vc-root-dir))
-         (default-directory (or project-root
-                                (and ai-scratch-path
-                                     (file-directory-p ai-scratch-path)
-                                     ai-scratch-path)
-                                default-directory))
-         (file-ref (when source-file
-                     (if project-root
-                         (file-relative-name source-file project-root)
-                       source-file)))
-         (file-prefix (when file-ref
-                        (format "On file @%s " file-ref)))
-         (region-text (when (use-region-p)
-                        (buffer-substring-no-properties (region-beginning) (region-end))))
-         (query (when region-text
-                  (read-string "Prompt about this region: " file-prefix)))
-         (initial-input (cond
-                         (region-text
-                          (format "%s\n\n```\n%s\n```" query region-text))
-                         (file-prefix
-                          file-prefix)))
-         (base-name (format "claude:%s"
-                            (file-name-nondirectory (directory-file-name default-directory))))
-         (term-buffer-name (format "*%s*" base-name))
-         (existing-buffer (get-buffer term-buffer-name)))
-    (if (and existing-buffer
-             (buffer-live-p existing-buffer)
-             (get-buffer-process existing-buffer))
-        (progn
-          (pop-to-buffer existing-buffer)
-          (when initial-input
-            (let ((proc (get-buffer-process existing-buffer)))
-              (term-send-string proc "\e[200~")
-              (term-send-string proc initial-input)
-              (term-send-string proc "\e[201~")
-              (term-send-string proc "\r"))))
-      (when (and existing-buffer (not (get-buffer-process existing-buffer)))
-        (kill-buffer existing-buffer))
-      (let ((proc-buffer (ansi-term "claude" base-name)))
-        (with-current-buffer proc-buffer
-          (pop-to-buffer proc-buffer)
-          (run-at-time 0.2 nil
-                       (lambda (buf)
-                         (when-let* ((win (get-buffer-window buf t))
-                                     (proc (get-buffer-process buf)))
-                           (set-process-window-size
-                            proc (window-height win) (window-width win))))
-                       proc-buffer)
-          (setq-local column-number-mode nil)
-          (setq-local term-buffer-maximum-size 2048)
-          (when initial-input
-            (run-at-time 1 nil
-                         (lambda (buf input)
-                           (when (buffer-live-p buf)
-                             (let ((proc (get-buffer-process buf)))
-                               (when proc
-                                 (term-send-string proc "\e[200~")
-                                 (term-send-string proc input)
-                                 (term-send-string proc "\e[201~")
-                                 (term-send-string proc "\r")))))
-                         proc-buffer initial-input)))))))
-
-(keymap-global-set "C-c C-0" 'claude-chat)
+(keymap-global-set "C-c C-0" 'claude-code-ide)
 
 ;;; Theme
 
@@ -200,5 +134,3 @@
  '(org-link ((t (:foreground "#0000ee" :underline t))))
  '(org-quote ((t (:foreground "#789922"))))
  '(region ((t (:background "#d6bad0")))))
-
-(setq gc-cons-threshold 800000)
