@@ -22,6 +22,10 @@
                (display-buffer-no-window)
                (allow-no-window . t)))
 
+(use-package exec-path-from-shell
+  :ensure t
+  :hook (after-init . exec-path-from-shell-initialize))
+
 ;;; Basic behaviour
 
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
@@ -184,12 +188,13 @@ The DWIM behaviour of this command is as follows:
   (set-face-attribute 'font-lock-constant-face nil :foreground link :slant 'italic)
   (set-face-attribute 'font-lock-warning-face nil :foreground red :weight 'bold)
   (set-face-attribute 'font-lock-builtin-face nil :foreground subject)
-  (set-face-attribute 'org-level-1 nil :foreground subject :weight 'bold :height 1.2)
-  (set-face-attribute 'org-level-2 nil :foreground name :weight 'bold :height 1.1)
-  (set-face-attribute 'org-link nil :foreground link :underline t)
-  (set-face-attribute 'org-block nil :background post)
-  (set-face-attribute 'org-quote nil :foreground green)
-  (set-face-attribute 'org-document-title nil :foreground subject :weight 'bold :height 1.5)
+  (with-eval-after-load 'org
+    (set-face-attribute 'org-level-1 nil :foreground subject :weight 'bold :height 1.2)
+    (set-face-attribute 'org-level-2 nil :foreground name :weight 'bold :height 1.1)
+    (set-face-attribute 'org-link nil :foreground link :underline t)
+    (set-face-attribute 'org-block nil :background post)
+    (set-face-attribute 'org-quote nil :foreground green)
+    (set-face-attribute 'org-document-title nil :foreground subject :weight 'bold :height 1.5))
   (set-face-attribute 'line-number nil :foreground border :background bg)
   (set-face-attribute 'line-number-current-line nil :foreground subject :background post))
 
@@ -257,14 +262,15 @@ The DWIM behaviour of this command is as follows:
   :ensure t
   :config
   (setq eat-term-name "xterm")
-  (eat-eshell-mode 1)                 ; use Eat to handle term codes in program output
   (eat-eshell-visual-command-mode 1)) ; commands like less will be handled by Eat
 
 (use-package claude-code-ide
+  :after eat
   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
   :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
   :config
+  (setq claude-code-ide-terminal-backend 'eat)
   (claude-code-ide-emacs-tools-setup) ; Optionally enable Emacs MCP tools
-  (setq claude-code-ide-terminal-backend 'eat))
+  )
 
 ;;; init.el ends here
