@@ -83,7 +83,7 @@
 (setq reb-re-syntax 'string) ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 
 (setq mac-command-modifier       'meta
-      mac-option-modifier        nil
+      mac-option-modifier         nil
       mac-control-modifier       'control
       mac-right-command-modifier 'super
       mac-right-option-modifier  'hyper)
@@ -252,6 +252,13 @@ The DWIM behaviour of this command is as follows:
   (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
 
 ;;; Claude
+
+(use-package eat
+  :ensure t
+  :config
+  (setq eat-term-name "xterm")
+  (eat-eshell-mode 1)                 ; use Eat to handle term codes in program output
+  (eat-eshell-visual-command-mode 1)) ; commands like less will be handled by Eat
 
 (use-package claude-code-ide
   :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
