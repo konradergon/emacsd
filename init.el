@@ -1,146 +1,225 @@
+;;; init.el --- Personal config  -*- lexical-binding: t; -*-
+
+(setq custom-file (locate-user-emacs-file "custom.el"))
+(load custom-file :no-error-if-file-is-missing)
+
+;;; Set up the package manager
+
 (require 'package)
 (setq package-native-compile t)
+(setq package-quickstart t) ;; For blazingly fast startup times, this line makes startup miles faster
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
-(unless package-archive-contents
-  (package-refresh-contents))
+(when (< emacs-major-version 29)
+  (unless (package-installed-p 'use-package)
+    (unless package-archive-contents
+      (package-refresh-contents))
+    (package-install 'use-package)))
 
-(dolist (pkg '(go-mode magit eat exec-path-from-shell))
-  (unless (package-installed-p pkg)
-    (package-install pkg)))
+(add-to-list 'display-buffer-alist
+             '("\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
+               (display-buffer-no-window)
+               (allow-no-window . t)))
 
-(exec-path-from-shell-initialize)
+;;; Basic behaviour
 
-(unless (package-installed-p 'claude-code-ide)
-  (package-vc-install
-   '(claude-code-ide :url "https://github.com/manzaltu/claude-code-ide.el")))
+(setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
+(setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
 
-(setq inhibit-splash-screen t
-      display-time-default-load-average nil
-      sentence-end-double-space nil
-      use-short-answers t
-      switch-to-buffer-obey-display-actions t)
+(setq frame-resize-pixelwise t)
+(setq ns-pop-up-frames nil) ;; When opening a file (like double click) on Mac, use an existing frame
+(setq window-resize-pixelwise nil)
+(setq split-width-threshold 80) ;; How thin the window should be to stop splitting vertically (I think)
+
+(setq-default truncate-lines t)
+(setq line-move-visual t) ;; C-p, C-n, etc uses visual lines
+
+(setq scroll-conservatively 101)
+(setq
+ mouse-wheel-follow-mouse 't
+ mouse-wheel-progressive-speed nil
+ ;; The most important setting of all! Make each scroll-event move 2 lines at
+ ;; a time (instead of 5 at default). Simply hold down shift to move twice as
+ ;; fast, or hold down control to move 3x as fast. Perfect for trackpads.
+ mouse-wheel-scroll-amount '(1 ((shift) . 3) ((control) . 6)))
+(setq mac-redisplay-dont-reset-vscroll t ;; sane trackpad/mouse scroll settings (doom)
+      mac-mouse-wheel-smooth-scroll nil)
+
+;; Try really hard to keep the cursor from getting stuck in the read-only prompt
+;; portion of the minibuffer.
+(setq minibuffer-prompt-properties '(read-only t intangible t cursor-intangible t face minibuffer-prompt))
+(add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+;; When opening a symlink that links to a file in a git repo, edit the file in the
+;; git repo so we can use the Emacs vc features (like Diff) in the future
+(setq vc-follow-symlinks t)
+
+;; Backups/lockfiles
+;; Don't generate backups or lockfiles.
+(setq create-lockfiles nil
+      make-backup-files nil
+      ;; But in case the user does enable it, some sensible defaults:
+      version-control t     ; number each backup file
+      backup-by-copying t   ; instead of renaming current file (clobbers links)
+      delete-old-versions t ; clean up after itself
+      kept-old-versions 5
+      kept-new-versions 5
+      backup-directory-alist (list (cons "." (concat user-emacs-directory "backups/"))))
+
+(when (fboundp 'set-charset-priority)
+  (set-charset-priority 'unicode))       ; pretty
+(prefer-coding-system 'utf-8)            ; pretty
+(setq locale-coding-system 'utf-8)       ; please
+
+(setq blink-cursor-interval 0.6)
+(blink-cursor-mode -1)
+
+(setq save-interprogram-paste-before-kill t
+      apropos-do-all t
+      mouse-yank-at-point t)
+
+(setq what-cursor-show-names t) ;; improves C-x =
+
+(setq reb-re-syntax 'string) ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 
 (setq mac-command-modifier 'meta
-      mac-right-command-modifier 'super
       mac-option-modifier nil
-      mac-right-option-modifier 'alt)
+      mac-control-modifier 'control
+      mac-right-command-modifier 'super
+      mac-right-option-modifier 'hyper)
 
-(defun backup-file-name (fpath)
-  (let* ((root (concat user-emacs-directory "backups/"))
-         (dest (concat root fpath "~")))
-    (make-directory (file-name-directory dest) t)
-    dest))
-(setq make-backup-file-name-function 'backup-file-name)
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-(setq project-mode-line t)
+(use-package recentf
+  :ensure nil
+  :config
+  (setq ;;recentf-auto-cleanup 'never
+   ;; recentf-max-menu-items 0
+   recentf-max-saved-items 200)
+  (setq recentf-filename-handlers ;; Show home folder path as a ~
+        (append '(abbreviate-file-name) recentf-filename-handlers))
+  (recentf-mode 1))
 
-(delete-selection-mode)
-(auto-revert-mode -1)
-(savehist-mode)
-(recentf-mode)
+(use-package delsel
+  :ensure nil
+  :hook (after-init . delete-selection-mode))
 
-(context-menu-mode)
+(defun prot/keyboard-quit-dwim ()
+  "Do-What-I-Mean behaviour for a general `keyboard-quit'.
 
-(windmove-default-keybindings 'control)
+The generic `keyboard-quit' does not do the expected thing when
+the minibuffer is open.  Whereas we want it to close the
+minibuffer, even without explicitly focusing it.
 
-(keymap-global-set "M-h" 'ns-do-hide-emacs)
-(keymap-global-set "M-'" 'other-frame)
+The DWIM behaviour of this command is as follows:
 
-;;; Org
+- When the region is active, disable it.
+- When a minibuffer is open, but not focused, close the minibuffer.
+- When the Completions buffer is selected, close it.
+- In every other case use the regular `keyboard-quit'."
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
 
-(setq org-directory "~/org/"
-      org-agenda-files (list (expand-file-name "inbox.org" org-directory)
-                             (expand-file-name "work.org" org-directory))
-      org-export-with-smart-quotes t
-      org-outline-path-complete-in-steps nil
-      org-refile-use-outline-path 'file)
+(define-key global-map (kbd "C-g") #'prot/keyboard-quit-dwim)
 
-(setq org-todo-keywords
-      '((sequence "TODO(t)" "WAITING(w@/!)" "STARTED(s!)"
-                  "|" "DONE(d!)" "OBSOLETE(o@)")))
+(use-package which-key
+  :diminish which-key-mode
+  :init
+  (which-key-mode 1)
+  (which-key-setup-minibuffer)
+  :config
+  (setq which-key-idle-delay 0.3)
+  (setq which-key-sort-order 'which-key-key-order-alpha
+        which-key-min-display-lines 3
+        which-key-max-display-columns nil))
 
-(setq org-tag-alist
-      '((:startgroup)
-        ("home" . ?h) ("work" . ?w) ("school" . ?s)
-        (:endgroup)
-        (:newline)
-        (:startgroup)
-        ("one-shot" . ?o) ("project" . ?j) ("tiny" . ?t)
-        (:endgroup)
-        ("meta") ("review") ("reading")))
+;;; Tweak the looks of Emacs
 
-(setq org-capture-templates
-      '(("c" "Default Capture" entry (file "inbox.org")
-         "* TODO %?\n%U\n%i")
-        ("r" "Capture with Reference" entry (file "inbox.org")
-         "* TODO %?\n%U\n%i\n%a")
-        ("w" "Work")
-        ("wm" "Work meeting" entry (file+headline "work.org" "Meetings")
-         "** TODO %?\n%U\n%i\n%a")
-        ("wr" "Work report" entry (file+headline "work.org" "Reports")
-         "** TODO %?\n%U\n%i\n%a")))
+(setq display-time-default-load-average nil)
 
-(setq org-agenda-custom-commands
-      '(("n" "Agenda and All Todos"
-         ((agenda)
-          (todo)))
-        ("w" "Work" agenda ""
-         ((org-agenda-files '("work.org"))))))
+(line-number-mode 1)
+(column-number-mode 1)
 
-(with-eval-after-load 'org
-  (require 'oc-csl)
-  (add-to-list 'org-export-backends 'md)
-  (setf (cdr (assoc 'file org-link-frame-setup)) 'find-file))
+(let ((mono-spaced-font "Monospace")
+      (proportionately-spaced-font "Sans"))
+  (set-face-attribute 'default nil :family mono-spaced-font :height 100)
+  (set-face-attribute 'fixed-pitch nil :family mono-spaced-font :height 1.0)
+  (set-face-attribute 'variable-pitch nil :family proportionately-spaced-font :height 1.0))
 
-(add-hook 'org-mode-hook 'flyspell-mode)
-(keymap-global-set "C-c l s" 'org-store-link)
-(keymap-global-set "C-c l i" 'org-insert-link-global)
+;;; Configure the minibuffer and completions
 
-;;; Dev
+(use-package savehist
+  :ensure nil ; it is built-in
+  :hook (after-init . savehist-mode))
 
-(keymap-global-set "C-x g" 'magit-status)
-(keymap-global-set "C-c C-0" 'claude-code-ide)
-(setq claude-code-ide-terminal-backend 'eat)
-(setq claude-code-ide-no-flicker t)
+(use-package corfu
+  :ensure t
+  :hook (after-init . global-corfu-mode)
+  :bind (:map corfu-map ("<tab>" . corfu-complete))
+  :config
+  (setq tab-always-indent 'complete)
+  (setq corfu-preview-current nil)
+  (setq corfu-min-width 20)
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages nil)
- '(package-vc-selected-packages
-   '((claude-code-ide :url
-		      "https://github.com/manzaltu/claude-code-ide.el"))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:background "#ffffee" :foreground "#000000"))))
- '(cursor ((t (:background "#800000"))))
- '(font-lock-builtin-face ((t (:foreground "#800000"))))
- '(font-lock-comment-face ((t (:foreground "#789922"))))
- '(font-lock-constant-face ((t (:foreground "#0000ee" :slant italic))))
- '(font-lock-doc-face ((t (:foreground "#789922" :slant italic))))
- '(font-lock-function-name-face ((t (:foreground "#0000ee"))))
- '(font-lock-keyword-face ((t (:foreground "#800000" :weight bold))))
- '(font-lock-string-face ((t (:foreground "#117743"))))
- '(font-lock-type-face ((t (:foreground "#af0a0f"))))
- '(font-lock-variable-name-face ((t (:foreground "#000000"))))
- '(font-lock-warning-face ((t (:foreground "#af0a0f" :weight bold))))
- '(fringe ((t (:background "#ffffee"))))
- '(line-number ((t (:foreground "#d6bad0" :background "#ffffee"))))
- '(line-number-current-line ((t (:foreground "#800000" :background "#f0e0d6"))))
- '(minibuffer-prompt ((t (:foreground "#800000" :weight bold))))
- '(mode-line ((t (:background "#f0e0d6" :foreground "#800000" :box (:line-width -1 :color "#d6bad0")))))
- '(mode-line-inactive ((t (:background "#ffffee" :foreground "#444444" :box (:line-width -1 :color "#f0e0d6")))))
- '(org-block ((t (:background "#f0e0d6"))))
- '(org-document-title ((t (:foreground "#800000" :weight bold :height 1.5))))
- '(org-level-1 ((t (:foreground "#800000" :weight bold :height 1.2))))
- '(org-level-2 ((t (:foreground "#117743" :weight bold :height 1.1))))
- '(org-link ((t (:foreground "#0000ee" :underline t))))
- '(org-quote ((t (:foreground "#789922"))))
- '(region ((t (:background "#d6bad0")))))
+  (setq corfu-popupinfo-delay '(1.25 . 0.5))
+  (corfu-popupinfo-mode 1) ; shows documentation after `corfu-popupinfo-delay'
+
+  ;; Sort by input history (no need to modify `corfu-sort-function').
+  (with-eval-after-load 'savehist
+    (corfu-history-mode 1)
+    (add-to-list 'savehist-additional-variables 'corfu-history)))
+
+;;; The file manager (Dired)
+
+(use-package dired
+  :ensure nil
+  :commands (dired)
+  :hook
+  ((dired-mode . dired-hide-details-mode)
+   (dired-mode . hl-line-mode))
+  :config
+  (setq dired-recursive-copies 'always)
+  (setq dired-recursive-deletes 'always)
+  (setq delete-by-moving-to-trash t)
+  (setq dired-dwim-target t))
+
+(use-package dired-subtree
+  :ensure t
+  :after dired
+  :bind
+  ( :map dired-mode-map
+    ("<tab>" . dired-subtree-toggle)
+    ("TAB" . dired-subtree-toggle)
+    ("<backtab>" . dired-subtree-remove)
+    ("S-TAB" . dired-subtree-remove))
+  :config
+  (setq dired-subtree-use-backgrounds nil))
+
+(use-package trashed
+  :ensure t
+  :commands (trashed)
+  :config
+  (setq trashed-action-confirmer 'y-or-n-p)
+  (setq trashed-use-header-line t)
+  (setq trashed-sort-key '("Date deleted" . t))
+  (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
+
+;;; Claude
+
+(use-package claude-code-ide
+  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (claude-code-ide-emacs-tools-setup) ; Optionally enable Emacs MCP tools
+  (setq claude-code-ide-terminal-backend 'eat))
+
+;;; init.el ends here
