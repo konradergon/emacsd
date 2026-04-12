@@ -25,7 +25,6 @@
 ;;; Basic behaviour
 
 (setq use-short-answers t) ;; When emacs asks for "yes" or "no", let "y" or "n" suffice
-(setq confirm-kill-emacs 'yes-or-no-p) ;; Confirm to quit
 
 (setq frame-resize-pixelwise t)
 (setq ns-pop-up-frames nil) ;; When opening a file (like double click) on Mac, use an existing frame
@@ -83,11 +82,11 @@
 
 (setq reb-re-syntax 'string) ;; https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder
 
-(setq mac-command-modifier 'meta
-      mac-option-modifier nil
-      mac-control-modifier 'control
+(setq mac-command-modifier       'meta
+      mac-option-modifier        nil
+      mac-control-modifier       'control
       mac-right-command-modifier 'super
-      mac-right-option-modifier 'hyper)
+      mac-right-option-modifier  'hyper)
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
@@ -144,16 +143,55 @@ The DWIM behaviour of this command is as follows:
 
 ;;; Tweak the looks of Emacs
 
+(setq inhibit-startup-screen t)
 (setq display-time-default-load-average nil)
 
 (line-number-mode 1)
 (column-number-mode 1)
 
+;; Text
 (let ((mono-spaced-font "Monospace")
       (proportionately-spaced-font "Sans"))
-  (set-face-attribute 'default nil :family mono-spaced-font :height 100)
+  (set-face-attribute 'default nil :family mono-spaced-font :height 120)
   (set-face-attribute 'fixed-pitch nil :family mono-spaced-font :height 1.0)
   (set-face-attribute 'variable-pitch nil :family proportionately-spaced-font :height 1.0))
+
+;; Colors
+(let ((bg      "#ffffee")
+      (post    "#f0e0d6")
+      (subject "#800000")
+      (text    "#000000")
+      (green   "#789922")
+      (link    "#0000ee")
+      (name    "#117743")
+      (border  "#d6bad0")
+      (red     "#af0a0f")
+      (grey    "#444444"))
+  (set-face-attribute 'default nil :background bg :foreground text)
+  (set-face-attribute 'cursor nil :background subject)
+  (set-face-attribute 'region nil :background border)
+  (set-face-attribute 'fringe nil :background bg)
+  (set-face-attribute 'mode-line nil :background post :foreground subject :box `(:line-width -1 :color ,border))
+  (set-face-attribute 'mode-line-inactive nil :background bg :foreground grey :box `(:line-width -1 :color ,post))
+  (set-face-attribute 'minibuffer-prompt nil :foreground subject :weight 'bold)
+  (set-face-attribute 'font-lock-comment-face nil :foreground green)
+  (set-face-attribute 'font-lock-doc-face nil :foreground green :slant 'italic)
+  (set-face-attribute 'font-lock-string-face nil :foreground name)
+  (set-face-attribute 'font-lock-keyword-face nil :foreground subject :weight 'bold)
+  (set-face-attribute 'font-lock-function-name-face nil :foreground link)
+  (set-face-attribute 'font-lock-variable-name-face nil :foreground text)
+  (set-face-attribute 'font-lock-type-face nil :foreground red)
+  (set-face-attribute 'font-lock-constant-face nil :foreground link :slant 'italic)
+  (set-face-attribute 'font-lock-warning-face nil :foreground red :weight 'bold)
+  (set-face-attribute 'font-lock-builtin-face nil :foreground subject)
+  (set-face-attribute 'org-level-1 nil :foreground subject :weight 'bold :height 1.2)
+  (set-face-attribute 'org-level-2 nil :foreground name :weight 'bold :height 1.1)
+  (set-face-attribute 'org-link nil :foreground link :underline t)
+  (set-face-attribute 'org-block nil :background post)
+  (set-face-attribute 'org-quote nil :foreground green)
+  (set-face-attribute 'org-document-title nil :foreground subject :weight 'bold :height 1.5)
+  (set-face-attribute 'line-number nil :foreground border :background bg)
+  (set-face-attribute 'line-number-current-line nil :foreground subject :background post))
 
 ;;; Configure the minibuffer and completions
 

@@ -7,7 +7,7 @@
 (setq native-comp-async-report-warnings-errors 'silent)
 (setq byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 (setq idle-update-delay 1.0)
-(setq read-process-output-max 1000000)
+(setq read-process-output-max 1048576)
 
 (setq-default bidi-display-reordering 'left-to-right 
               bidi-paragraph-direction 'left-to-right)
