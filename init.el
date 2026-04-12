@@ -145,6 +145,60 @@ The DWIM behaviour of this command is as follows:
         which-key-min-display-lines 3
         which-key-max-display-columns nil))
 
+(use-package org
+  :ensure nil
+  :bind (:map global-map
+              ("C-c l s" . org-store-link)
+              ("C-c l i" . org-insert-link-global))
+  :config
+  (require 'oc-csl)
+  (add-to-list 'org-export-backends 'md)
+  (setf (cdr (assoc 'file org-link-frame-setup)) 'find-file)
+
+  ;; Directories
+  (setq org-directory "~/org/"
+        org-agenda-files '("~/org/inbox.org" "~/org/work.org"))
+
+  ;; Export
+  (setq org-export-with-smart-quotes t)
+
+  ;; Tags
+  (setq org-tag-alist '((:startgroup)
+                        ("home" . ?h) ("work" . ?w) ("school" . ?s)
+                        (:endgroup)
+                        (:startgroup)
+                        ("one-shot" . ?o) ("project" . ?j) ("tiny" . ?t)
+                        (:endgroup)
+                        ("meta") ("review") ("reading")))
+
+  ;; Todo states
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "WAITING(w@/!)" "STARTED(s!)" "|" "DONE(d!)" "OBSOLETE(o@)")))
+
+  ;; Refile
+  (setq org-refile-use-outline-path 'file
+        org-outline-path-complete-in-steps nil
+        org-refile-targets '((org-agenda-files :maxlevel . 3)))
+
+  ;; Capture templates
+  (setq org-capture-templates
+        '(("c" "Capture"       entry (file "~/org/inbox.org") "* TODO %?\n%U\n%i")
+          ("r" "Capture w/ref" entry (file "~/org/inbox.org") "* TODO %?\n%U\n%i\n%a")
+          ("w" "Work")
+          ("wm" "Work meeting" entry (file+headline "~/org/work.org" "Meetings") "** TODO %?\n%U\n%i\n%a")
+          ("wr" "Work report"  entry (file+headline "~/org/work.org" "Reports")  "** TODO %?\n%U\n%i\n%a")))
+
+  ;; Agenda views
+  (setq org-agenda-custom-commands
+        '(("n" "All" ((agenda) (todo)))
+          ("w" "Work" agenda "" ((org-agenda-files '("~/org/work.org")))))))
+
+(use-package org-roam
+  :ensure t
+  :config
+  (setq org-roam-directory "~/org/roam/"
+        org-roam-index-file "~/org/roam/index.org"))
+
 ;;; Tweak the looks of Emacs
 
 (setq inhibit-startup-screen t)
@@ -154,7 +208,7 @@ The DWIM behaviour of this command is as follows:
 (column-number-mode 1)
 
 ;; Text
-(let ((mono-spaced-font "Monospace")
+(let ((mono-spaced-font            "Monospace")
       (proportionately-spaced-font "Sans"))
   (set-face-attribute 'default nil :family mono-spaced-font :height 120)
   (set-face-attribute 'fixed-pitch nil :family mono-spaced-font :height 1.0)
@@ -204,23 +258,6 @@ The DWIM behaviour of this command is as follows:
   :ensure nil ; it is built-in
   :hook (after-init . savehist-mode))
 
-(use-package corfu
-  :ensure t
-  :hook (after-init . global-corfu-mode)
-  :bind (:map corfu-map ("<tab>" . corfu-complete))
-  :config
-  (setq tab-always-indent 'complete)
-  (setq corfu-preview-current nil)
-  (setq corfu-min-width 20)
-
-  (setq corfu-popupinfo-delay '(1.25 . 0.5))
-  (corfu-popupinfo-mode 1) ; shows documentation after `corfu-popupinfo-delay'
-
-  ;; Sort by input history (no need to modify `corfu-sort-function').
-  (with-eval-after-load 'savehist
-    (corfu-history-mode 1)
-    (add-to-list 'savehist-additional-variables 'corfu-history)))
-
 ;;; The file manager (Dired)
 
 (use-package dired
@@ -256,7 +293,7 @@ The DWIM behaviour of this command is as follows:
   (setq trashed-sort-key '("Date deleted" . t))
   (setq trashed-date-format "%Y-%m-%d %H:%M:%S"))
 
-;;; Claude
+;;; Dev Assist
 
 (use-package eat
   :ensure t
@@ -270,6 +307,7 @@ The DWIM behaviour of this command is as follows:
   :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
   :config
   (setq claude-code-ide-terminal-backend 'eat)
+  (setq claude-code-ide-terminal-initialization-delay 0.15)
   (claude-code-ide-emacs-tools-setup) ; Optionally enable Emacs MCP tools
   )
 
